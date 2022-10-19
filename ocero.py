@@ -2,9 +2,10 @@ import numpy as np
 from pprint import pprint
 class Ocero:
     def __init__(self):
+
         #-1は黒の石。1は白の石。0は何も置かれていない
-        self.board = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 0, 0, 0, 0],
+        self.board = np.array( [[0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
                                 [0, 0, 0, 0, 0, 0, 0, 0],
                                 [0, 0, 0,-1, 1, 0, 0, 0],
                                 [0, 0, 0, 1,-1, 0, 0, 0],
@@ -16,12 +17,16 @@ class Ocero:
     def display(self):
         print(self.board)
     
+    def getboard(self):
+        return self.board
+    
 
     def set_black(self, pos):
         '''黒色の石を置いて回転'''
         x, y = pos
         afterset = self.turnCheck(pos=(x, y), stone=-1)
         if type(afterset) !=bool:
+            afterset[y, x]=-1
             self.board = afterset.copy()
 
         else:
@@ -32,6 +37,7 @@ class Ocero:
         x, y = pos
         afterset = self.turnCheck(pos=(x, y), stone=1)
         if type(afterset) != bool:
+            afterset[y, x]=1
             self.board = afterset.copy()
 
         else:
@@ -87,39 +93,27 @@ class Ocero:
         while True:
             y+=vy
             x+=vx
-            if not(0 <= y+vy <= 7 and 0 <= x+vx <= 7):
+            if not(0 <= y <= 7 and 0 <= x <= 7):
+                return False
+            
+            if board[y, x]==0:
                 return False
 
 
+
             if board[y, x] == stone:
+                sx+=vx
+                sy+=vy
                 while True:
                     turnpoint.append((sx, sy))
                     sx += vx
                     sy += vy
                     if sx == x and sy == y:
                         return turnpoint
+            
+            
                         
                     
-                # if vy == 0:
-                #     vy+=1
-                # if vx == 0:
-                #     vx+=1
-
-                # if sy >= y:
-                #     if sx >= x:
-                #         board[y:sy+vy, x:sx+vx] = stone
-                    
-                #     elif sx <= x:
-                #         board[y:sy+vy, sx:x+vx] = stone
-
-                # elif sy <= y:
-                #     if sx >= x:
-                #         board[sy:y+vy, x:sx+vx] = stone
-                    
-                #     elif sx <= x:
-                #         board[sy:y+vy, sx:x+vx] = stone
-
-                # return turnpoint
 
         
         
@@ -142,7 +136,5 @@ if __name__ == '__main__':
         game.display()
 
 
-        #memo
-        #斜めのインデックス指定に問題あり
 
         
