@@ -2,6 +2,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from ocero import Ocero
 import numpy as np
+import random
 class Game(tk.Frame):
     def __init__(self, master=tk.Tk()):
         
@@ -70,7 +71,7 @@ class Game(tk.Frame):
         
 
 
-    def play_game(self, first='white', whitemode='human', blackmode='human'):
+    def play_game(self, first='white', whitemode='human', blackmode='randomai'):
         '''ゲーム中の処理'''
         if first == 'black':
             nowTurnStone = -1
@@ -87,6 +88,7 @@ class Game(tk.Frame):
                 continue
             
             inp = self.move(nowPlayermode, nowTurnStone)
+            print(inp)
             x, y = inp
             
             
@@ -118,7 +120,7 @@ class Game(tk.Frame):
     def move(self, pmode, nowStone):
         '''どこに置くか決定する'''
         self.nowCanset = self.manager.isCanSet(nowStone)
-        if pmode=='human':
+        if pmode=='human':  #人間用
             for x, y in self.nowCanset:
                 self.canvas.create_rectangle(22+50*x,100+22+50*y, 28+50*x, 28+100+50*y, fill='yellow', tags='canpos')
                 self.update()
@@ -126,6 +128,13 @@ class Game(tk.Frame):
             clickpos = self.playerInput() #入力まち
             self.canvas.delete('canpos')
             return clickpos
+        
+        if pmode=='randomai': #ランダムに設置するAI
+            return self.randomai(nowStone)
+    
+    def randomai(self, nowStone):
+        canset = self.manager.isCanSet(nowStone)
+        return random.choice(canset)
 
     def playerInput(self):
         global mousePos
