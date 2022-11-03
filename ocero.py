@@ -12,6 +12,8 @@ class Ocero:
                                 [0, 0, 0, 0, 0, 0, 0, 0],
                                 [0, 0, 0, 0, 0, 0, 0, 0],
                                 [0, 0, 0, 0, 0, 0, 0, 0],], dtype=np.int8)
+        
+        self.log = [[], []] #黒、白のログを記録
 
         
     def display(self):
@@ -26,6 +28,7 @@ class Ocero:
         x, y = pos
         afterset = self.turnCheck(pos=(x, y), stone=-1)
         if type(afterset) !=bool:
+            self.log[0].append([self.board,(x, y)])
             afterset[y, x]=-1
             self.board = afterset.copy()
 
@@ -37,6 +40,7 @@ class Ocero:
         x, y = pos
         afterset = self.turnCheck(pos=(x, y), stone=1)
         if type(afterset) != bool:
+            self.log[1].append([self.board, (x, y)])
             afterset[y, x]=1
             self.board = afterset.copy()
 

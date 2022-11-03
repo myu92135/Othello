@@ -3,30 +3,48 @@ import tkinter as tk
 from ocero import Ocero
 import numpy as np
 import random
+import load_file as lf
 class Game(tk.Frame):
-    def __init__(self, master=tk.Tk()):
+    def __init__(self, master=tk.Tk(), after_endtime=-1):
         
-        super().__init__(master)
-       
-        self.pack()
+        for i in range(10):
+            try:
+                self.canvas.delete('all')
+            except:
+                pass
+            super().__init__(master)
 
-        master.geometry('400x600')#ウィンドウの表示
-
-        self.img_dict = self.import_Images('./Images')#画像の読み込み
+            self.after_endtime = after_endtime#終了後に画面を表示し続ける時間(0以下で無限)
         
-        self.init_board() #ボードの初期化、描画
+            self.pack()
 
-        self.update()
+            master.geometry('400x600')#ウィンドウの表示
+
+            self.img_dict = self.import_Images('./Images')#画像の読み込み
+            
+            self.init_board() #ボードの初期化、描画
+
+            self.update()
+            
+            self.play_game()
+
+            self.show_info(nowstone=0) #ゲーム終了処理(勝敗の表示)
+
+            if self.after_endtime >= 0:
+                self.after(after_endtime)
+            print(f'{i}回目')
+            
         
-        self.play_game()
-
-        self.show_info(nowstone=0) #ゲーム終了処理(勝敗の表示)
 
         
 
     def init_board(self):
         
         '''ゲームの初期設定'''
+
+        self.isBlackFirst = True
+        self.isWhiteFirst = True
+
         self.canvas = tk.Canvas(self.master, width=400, height=600)
         # self.stone_canvases = [[tk.Canvas(self.master, width=50, height=50) for _ in range(8)] for _ in range(8)]
         
@@ -71,14 +89,14 @@ class Game(tk.Frame):
         
 
 
-    def play_game(self, first='white', whitemode='human', blackmode='randomai'):
+    def play_game(self, first='white', whitemode='mc-ai', blackmode='human'):
         '''ゲーム中の処理'''
         if first == 'black':
             nowTurnStone = -1
         else:
             nowTurnStone= 1
+ 
         while True:
-            self.manager.display()
             self.show_info(nowTurnStone)#画面情報の更新
             nowPlayermode = whitemode if nowTurnStone ==1 else blackmode
 
@@ -88,7 +106,6 @@ class Game(tk.Frame):
                 continue
             
             inp = self.move(nowPlayermode, nowTurnStone)
-            print(inp)
             x, y = inp
             
             
@@ -111,15 +128,44 @@ class Game(tk.Frame):
                 if w == b:
                     self.wincolor ='draw'
                 
+                ###それぞれのプレイヤーの終了処理を行う
+                self.move(whitemode, 1, isEnd=True, isTrain=True,)
+                self.move(blackmode, -1, isEnd=True, isTrain=True)
+                
+                
                 break
             nowTurnStone*=-1
     
+  
 
     
-    
-    def move(self, pmode, nowStone):
-        '''どこに置くか決定する'''
+    ############AI########################3
+    def move(self, pmode, nowStone, isEnd=False, isTrain=False):
+        '''どこに置くか決定する。
+            human:人間, randomai:ランダム設置, mc-ai:モンテカルロ法'''
+
+
+        ###########終了処理はここに書くこと##################
+        if isEnd == True:
+            if not isTrain:
+                return
+            ####モンテカルロ#################
+            if pmode == 'mc-ai' or True:#全ての場合学習するように
+                if nowStone == -1:
+                    ind = 0
+                else:
+                    ind =1
+                lf.write_file_mc('data/mc/4.txt', self.manager.log[ind], nowStone, wincolor=self.wincolor)
+            ###############################################################
+
+
+
+
+        ####################################################
+            return
+        ###########ここから通常処理#########################
         self.nowCanset = self.manager.isCanSet(nowStone)
+
         if pmode=='human':  #人間用
             for x, y in self.nowCanset:
                 self.canvas.create_rectangle(22+50*x,100+22+50*y, 28+50*x, 28+100+50*y, fill='yellow', tags='canpos')
@@ -131,11 +177,77 @@ class Game(tk.Frame):
         
         if pmode=='randomai': #ランダムに設置するAI
             return self.randomai(nowStone)
+
+
+        if pmode=='mc-ai':  #モンテカルロ法
+            return self.mcai(nowStone, usefile='./data/mc/4.txt', choice_best_per=1.0)
+        
+
     
     def randomai(self, nowStone):
         canset = self.manager.isCanSet(nowStone)
         return random.choice(canset)
 
+    def mcai(self, nowStone, usefile, choice_best_per = 0.5):
+        '''usefileで行動選択に使う学習済みのファイルを選択
+            isTrainで学習を続けるか
+            updatefileで学習データを反映するファイルを選択'''
+        #初回だけファイルを読み込む
+        if self.isBlackFirst and nowStone==-1:
+            self.trained_dict_black= lf.load_file_mc(usefile, nowStone=nowStone)
+            self.isBlackFirst=False
+        elif self.isWhiteFirst and nowStone == 1:
+            self.trained_dict_white= lf.load_file_mc(usefile, nowStone=nowStone)
+            self.isWhiteFirst=False
+        
+        if nowStone==-1:
+            self.trained_dict = self.trained_dict_black.copy()
+        
+        elif nowStone==1:
+            self.trained_dict = self.trained_dict_white.copy()
+        #現在可能な置き場所
+        can_set = self.manager.isCanSet(nowStone)
+
+        #現在のボード(1を自分の石として表現)
+        nowboard = self.manager.getboard().copy()
+        if nowStone == -1:
+            nowboard *= -1
+        try:
+            now_state = self.trained_dict[tuple(nowboard.reshape((1, 64)).tolist()[0])]
+
+        except KeyError:
+            self.trained_dict[tuple(nowboard.reshape((1, 64)).tolist()[0])] = dict()
+            now_state = self.trained_dict[tuple(nowboard.reshape((1, 64)).tolist()[0])]
+        
+        best_pos = ()
+        best_score = -2
+        #最大価値の行動
+        for pos in can_set:
+            try:
+                if best_score < now_state[pos]:
+                    best_score = now_state[pos]
+                    best_pos = pos
+                
+            except KeyError:
+                now_state[pos] = 0.0
+                if best_score < now_state[pos]:
+                    best_score = now_state[pos]
+                    best_pos = pos    
+        
+        if random.random() <= choice_best_per or len(can_set)==1:
+            return best_pos
+        
+        else:
+            while True:
+                pos=random.choice(list(now_state.keys()))
+                if pos != best_pos:
+                    return pos
+
+
+
+
+
+        
     def playerInput(self):
         global mousePos
         while True:
@@ -224,6 +336,8 @@ def ret_clickpos(event):
 
 
 if __name__=='__main__':
-    mousePos = (-100, -100)
-    game = Game()
-    game.mainloop()
+    n=1000#ゲームを行う回数
+    for i in range(n):
+        mousePos = (-100, -100)
+        game = Game(after_endtime= 0)
+        game.mainloop()
