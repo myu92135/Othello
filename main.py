@@ -4,6 +4,7 @@ from ocero import Ocero
 import numpy as np
 import random
 import load_file as lf
+import model
 class Game(tk.Frame):
     def __init__(self, master=tk.Tk(), after_endtime=-1):
         
@@ -242,6 +243,11 @@ class Game(tk.Frame):
                 pos=random.choice(list(now_state.keys()))
                 if pos != best_pos:
                     return pos
+
+    def model_ai(self, nowStone, usefile):
+        nowState = self.manager.getboard().copy()
+        nowState = tuple(nowState.reshape((1, 64)).tolist())
+        return pos
 
 
 
