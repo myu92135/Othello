@@ -1,4 +1,4 @@
-texchureフォルダ内のファイル名は以下
+Imagesフォルダ内のファイル名は以下
 - black_stone.png:黒石　
 - white_stone.png:白石
 - board.png:盤
