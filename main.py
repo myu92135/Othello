@@ -73,7 +73,6 @@ class Game(tk.Frame):
         else:                  #最初が白の番だったら
             nowTurnStone= 1    #現在の手番を白にする
         while True: #ゲーム処理のループ
-            self.manager.display()       #盤面を出力する(デバック用)
             self.show_info(nowTurnStone) #現在の盤面をもとに画面を更新する
             nowPlayermode = whitemode if nowTurnStone ==1 else blackmode     #現在のプレイヤーの種類(入力モード)を保存
 
@@ -83,7 +82,6 @@ class Game(tk.Frame):
                 continue
             
             inp = self.move(nowPlayermode, nowTurnStone)   #現在のプレイヤーの種類に応じて、石の設置位置をタプルで返す
-            print(inp)  #入力を表示(デバッグ用)
             x, y = inp  #石の設置位置をアンパック
             
             
