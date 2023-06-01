@@ -1,5 +1,4 @@
 import numpy as np
-from pprint import pprint
 class Ocero:
     def __init__(self):
 
@@ -15,16 +14,18 @@ class Ocero:
 
         
     def display(self):
+        """現在の盤面を出力"""
         print(self.board)
     
     def getboard(self):
-        return self.board
+        """現在の盤面を取得"""
+        return self.board 
     
 
-    def set_black(self, pos):
-        '''黒色の石を置いて回転'''
-        x, y = pos
-        afterset = self.turnCheck(pos=(x, y), stone=-1)
+    def set_black(self, pos:tuple):
+        '''黒色の石を置いて、回転判定を行う。'''
+        x, y = pos                                        #設置位置
+        afterset = self.turnCheck(pos=(x, y), stone=-1)   #石をx, yに設置し、回転した後の盤面を取得
         if type(afterset) !=bool:
             afterset[y, x]=-1
             self.board = afterset.copy()
@@ -118,6 +119,7 @@ class Ocero:
         
         
 if __name__ == '__main__':
+    #デバッグ用に作成した。設置不能な位置に石を設置するとおかしくなる。
     game = Ocero()
     game.display()
 
