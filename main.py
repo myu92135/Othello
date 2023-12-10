@@ -7,7 +7,7 @@ class Game(tk.Frame):
     def __init__(self, player1='human', player2='randomai', master=tk.Tk()):
         """オセロゲームのクラス。
         player1, player2引数にプレイヤーの種類を指定する。デフォルトでは1がhuman, 2がrandomai
-        【種類】human:人間, randomai:ランダムに置くAI"""
+        """
 
         super().__init__(master)
        
@@ -96,7 +96,7 @@ class Game(tk.Frame):
 
             self.update_board()                                #最新の盤面を描画する
 
-            #ゲーム終了判定
+            # ゲーム終了判定#############
             if self.manager.isCanSet(1) ==[] and self.manager.isCanSet(-1)==[]:  #お互いのプレイヤーの置ける位置が無くなったとき
                 w = np.count_nonzero(self.manager.board==1)                      #白の石の数を数える
                 b = np.count_nonzero(self.manager.board==-1)                     #黒の石の数を数える
@@ -104,6 +104,7 @@ class Game(tk.Frame):
                 if w == b:                                                       #もし石の数が一致していたら引き分け
                     self.wincolor ='draw'
                 break                                                            #ループを抜ける
+            # 終了処理終わり#########
 
             nowTurnStone*=-1                       #現在の石の色を反対にする (ターン終了)
     
