@@ -14,3 +14,9 @@
 - bg.png:背景
 - black_player_bg.png:黒色プレイヤーのプレート
 - white_player_bg.png:白色プレイヤーのプレート
+## 環境
+- Python 3.10.4
+- numpy 1.23.1
+- pillow 9.2.0
+- Tkinter 8.6.12
+
